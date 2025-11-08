@@ -168,6 +168,54 @@
       </div>
     </div>
 
+    <!-- Share Menu Modal -->
+    <div id="share-menu" class="share-menu hidden">
+      <div class="share-menu-content">
+        <div class="share-menu-header">
+          <h3>Share Activity</h3>
+          <button class="close-share-menu">&times;</button>
+        </div>
+        <div id="share-activity-details">
+          <p id="share-activity-name"></p>
+        </div>
+        <div class="share-options">
+          <button class="share-option" data-platform="twitter">
+            <span class="share-option-icon">🐦</span>
+            <span>Twitter</span>
+          </button>
+          <button class="share-option" data-platform="facebook">
+            <span class="share-option-icon">📘</span>
+            <span>Facebook</span>
+          </button>
+          <button class="share-option" data-platform="email">
+            <span class="share-option-icon">✉️</span>
+            <span>Email</span>
+          </button>
+          <button class="share-option" data-platform="whatsapp">
+            <span class="share-option-icon">💬</span>
+            <span>WhatsApp</span>
+          </button>
+        </div>
+        <div class="share-link-container">
+          <div class="share-link-label">Or copy link:</div>
+          <div class="share-link-input-wrapper">
+            <input
+              type="text"
+              id="share-link-input"
+              class="share-link-input"
+              readonly
+            />
+            <button id="copy-link-button" class="copy-link-button">
+              Copy
+            </button>
+          </div>
+          <div id="share-success-message" class="share-success-message">
+            Link copied!
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="app.js"></script>
   </body>
 </html>

@@ -25,6 +25,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
 
+  // Share menu elements
+  const shareMenu = document.getElementById("share-menu");
+  const shareActivityName = document.getElementById("share-activity-name");
+  const shareLinkInput = document.getElementById("share-link-input");
+  const copyLinkButton = document.getElementById("copy-link-button");
+  const closeShareMenu = document.querySelector(".close-share-menu");
+  const shareSuccessMessage = document.getElementById("share-success-message");
+  const shareOptions = document.querySelectorAll(".share-option");
+
+  // Current share data
+  let currentShareData = null;
+
   // Activity categories with corresponding colors
   const activityTypes = {
     sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32" },
@@ -253,6 +265,127 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("password").value;
     await login(username, password);
   });
+
+  // Share functionality
+  function openShareMenu(activityName, activityDescription, activitySchedule) {
+    currentShareData = {
+      name: activityName,
+      description: activityDescription,
+      schedule: activitySchedule,
+    };
+
+    shareActivityName.textContent = `"${activityName}"`;
+
+    // Generate share URL (in production, this would be the actual activity URL)
+    const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(
+      activityName
+    )}`;
+    shareLinkInput.value = shareUrl;
+
+    shareMenu.classList.remove("hidden");
+    setTimeout(() => {
+      shareMenu.classList.add("show");
+    }, 10);
+  }
+
+  function closeShareMenuHandler() {
+    shareMenu.classList.remove("show");
+    setTimeout(() => {
+      shareMenu.classList.add("hidden");
+      shareSuccessMessage.classList.remove("show");
+      copyLinkButton.textContent = "Copy";
+      copyLinkButton.classList.remove("copied");
+    }, 300);
+  }
+
+  function getShareText() {
+    if (!currentShareData) return "";
+    return `Check out "${currentShareData.name}" at Mergington High School! ${currentShareData.description} - Schedule: ${currentShareData.schedule}`;
+  }
+
+  function handleShare(platform) {
+    const shareUrl = shareLinkInput.value;
+    const shareText = getShareText();
+
+    let url;
+    switch (platform) {
+      case "twitter":
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          shareText
+        )}&url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case "facebook":
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          shareUrl
+        )}`;
+        break;
+      case "email":
+        url = `mailto:?subject=${encodeURIComponent(
+          `Activity: ${currentShareData.name}`
+        )}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`;
+        break;
+      case "whatsapp":
+        url = `https://wa.me/?text=${encodeURIComponent(
+          `${shareText} ${shareUrl}`
+        )}`;
+        break;
+      default:
+        return;
+    }
+
+    window.open(url, "_blank", "width=600,height=400");
+  }
+
+  function copyShareLink() {
+    shareLinkInput.select();
+    shareLinkInput.setSelectionRange(0, 99999); // For mobile devices
+
+    navigator.clipboard
+      .writeText(shareLinkInput.value)
+      .then(() => {
+        copyLinkButton.textContent = "Copied!";
+        copyLinkButton.classList.add("copied");
+        shareSuccessMessage.classList.add("show");
+
+        setTimeout(() => {
+          shareSuccessMessage.classList.remove("show");
+        }, 3000);
+
+        setTimeout(() => {
+          copyLinkButton.textContent = "Copy";
+          copyLinkButton.classList.remove("copied");
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy:", err);
+        // Fallback for older browsers
+        try {
+          document.execCommand("copy");
+          copyLinkButton.textContent = "Copied!";
+          copyLinkButton.classList.add("copied");
+        } catch (e) {
+          alert("Failed to copy link. Please copy it manually.");
+        }
+      });
+  }
+
+  // Event listeners for share menu
+  closeShareMenu.addEventListener("click", closeShareMenuHandler);
+
+  shareMenu.addEventListener("click", (event) => {
+    if (event.target === shareMenu) {
+      closeShareMenuHandler();
+    }
+  });
+
+  shareOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      const platform = option.dataset.platform;
+      handleShare(platform);
+    });
+  });
+
+  copyLinkButton.addEventListener("click", copyShareLink);
 
   // Show loading skeletons
   function showLoadingSkeletons() {
@@ -568,6 +701,13 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `
         }
+        <button class="share-button" data-activity="${name}" data-description="${details.description.replace(
+      /"/g,
+      "&quot;"
+    )}" data-schedule="${formattedSchedule.replace(/"/g, "&quot;")}">
+          <span class="share-icon">🔗</span>
+          <span>Share</span>
+        </button>
       </div>
     `;
 
@@ -586,6 +726,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handler for share button
+    const shareButton = activityCard.querySelector(".share-button");
+    shareButton.addEventListener("click", () => {
+      openShareMenu(
+        shareButton.dataset.activity,
+        shareButton.dataset.description,
+        shareButton.dataset.schedule
+      );
+    });
 
     activitiesList.appendChild(activityCard);
   }
